@@ -1,0 +1,102 @@
+[
+  {
+    "categoria": "Standard",
+    "domanda": "Voglio una user story per resettare la password dimenticata tramite email.",
+    "risposta_ideale": "Come utente, voglio poter avviare la procedura di reset della password dalla pagina di login e ricevere un link via email, così da poter riottenere l'accesso al mio account in modo sicuro."
+  },
+  {
+    "categoria": "Standard",
+    "domanda": "Crea una user story per la ricerca di prodotti tramite filtri di prezzo e categoria.",
+    "risposta_ideale": "Come cliente, voglio poter filtrare i prodotti per categoria e specificare una fascia di prezzo, così da visualizzare solo gli articoli che mi interessano e che rientrano nel mio budget."
+  },
+  {
+    "categoria": "Standard",
+    "domanda": "L'utente deve poter caricare un'immagine per il suo profilo.",
+    "risposta_ideale": "Come utente, voglio poter caricare una nuova immagine del profilo dalla pagina delle impostazioni, così da personalizzare il mio account e rendermi riconoscibile."
+  },
+  {
+    "categoria": "Standard",
+    "domanda": "Voglio poter salvare un prodotto nella mia wishlist.",
+    "risposta_ideale": "Come utente registrato, voglio poter aggiungere un prodotto alla mia wishlist da una pagina prodotto, così da poterlo ritrovare e acquistare in un secondo momento."
+  },
+  {
+    "categoria": "Standard",
+    "domanda": "L'utente deve poter scrivere una recensione per un prodotto acquistato.",
+    "risposta_ideale": "Come cliente, voglio poter lasciare una valutazione a stelle e un commento testuale per un prodotto che ho acquistato, così da condividere la mia opinione con altri utenti."
+  },
+  {
+    "categoria": "Complessa",
+    "domanda": "L'utente admin deve poter vedere la lista degli ordini, filtrarli per data e stato (in attesa, spedito, cancellato), e esportare i risultati in CSV.",
+    "risposta_ideale": "Come amministratore, voglio poter visualizzare e filtrare la lista di tutti gli ordini per intervallo di date e per stato, e poter esportare la vista corrente in un file CSV, così da poter analizzare i dati di vendita e gestire le operazioni."
+  },
+  {
+    "categoria": "Complessa",
+    "domanda": "Nel carrello, l'utente deve poter modificare la quantità di un prodotto, rimuoverlo e vedere il subtotale aggiornarsi in tempo reale.",
+    "risposta_ideale": "Come cliente, voglio poter modificare la quantità di ogni articolo o rimuoverlo dal mio carrello, vedendo il costo totale aggiornarsi istantaneamente, così da avere il pieno controllo sul mio ordine prima del checkout."
+  },
+  {
+    "categoria": "Complessa",
+    "domanda": "Voglio un sistema di notifiche che avvisi l'utente via email e con una notifica in-app quando un prodotto della sua wishlist torna disponibile.",
+    "risposta_ideale": "Come utente, voglio ricevere una notifica via email e una all'interno dell'app quando un prodotto che ho salvato nella mia wishlist torna disponibile, così da non perdere l'opportunità di acquistarlo."
+  },
+  {
+    "categoria": "Complessa",
+    "domanda": "Durante il checkout, l'utente deve poter scegliere tra spedizione standard e spedizione express, vedendo i costi e le date di consegna stimate per entrambe.",
+    "risposta_ideale": "Come cliente, voglio poter scegliere tra diverse opzioni di spedizione durante il checkout, visualizzando chiaramente i costi e le date di consegna stimate per ciascuna, così da poter selezionare quella che meglio si adatta alle mie esigenze."
+  },
+  {
+    "categoria": "Complessa",
+    "domanda": "L'utente deve poter applicare un codice sconto nel carrello e vedere il totale ricalcolato prima di procedere al pagamento.",
+    "risposta_ideale": "Come acquirente, voglio poter inserire un codice promozionale nel mio carrello, così che il totale dell'ordine venga ricalcolato per riflettere lo sconto prima che io proceda al pagamento."
+  },
+  {
+    "categoria": "Ambigua",
+    "domanda": "Dobbiamo rendere la dashboard più utile.",
+    "risposta_ideale": "Come utente, voglio visualizzare un riepilogo dei miei ordini recenti, lo stato delle mie spedizioni e delle scorciatoie alle sezioni più importanti direttamente sulla dashboard, così da avere una panoramica immediata delle mie attività."
+  },
+  {
+    "categoria": "Ambigua",
+    "domanda": "Semplifichiamo la registrazione.",
+    "risposta_ideale": "Come nuovo utente, voglio poter completare la registrazione fornendo solo email e password, senza dover compilare campi non essenziali, così da creare un account nel minor tempo possibile."
+  },
+  {
+    "categoria": "Ambigua",
+    "domanda": "Bisogna gestire meglio i resi.",
+    "risposta_ideale": "Come cliente, voglio poter avviare una richiesta di reso per un ordine direttamente dalla mia cronologia acquisti e stampare l'etichetta di spedizione, così da rendere il processo di restituzione più semplice e autonomo."
+  },
+  {
+    "categoria": "Ambigua",
+    "domanda": "La ricerca deve funzionare meglio.",
+    "risposta_ideale": "Come utente, voglio che la barra di ricerca mi suggerisca automaticamente i prodotti mentre digito, così da trovare più velocemente quello che cerco."
+  },
+  {
+    "categoria": "Zero-Shot",
+    "domanda": "Voglio una user story per un'app di giardinaggio che notifichi quando innaffiare le piante in base al meteo locale.",
+    "risposta_ideale": "Come appassionato di giardinaggio, voglio ricevere notifiche intelligenti che mi ricordino quando innaffiare le piante, tenendo conto delle previsioni meteo locali per evitare di bagnarle eccessivamente, così da mantenerle sane e ottimizzare il consumo d'acqua."
+  },
+  {
+    "categoria": "Zero-Shot",
+    "domanda": "Crea una user story per una piattaforma di e-learning che permetta agli studenti di fare domande anonime durante una lezione live.",
+    "risposta_ideale": "Come studente, voglio poter inviare domande in modo anonimo durante una lezione dal vivo, così da poter chiarire i miei dubbi senza sentirmi a disagio o timido."
+  },
+  {
+    "categoria": "Zero-Shot",
+    "domanda": "L'admin di un hotel deve poter modificare la disponibilità delle camere per un certo periodo a causa di lavori di manutenzione.",
+    "risposta_ideale": "Come gestore dell'hotel, voglio poter bloccare la disponibilità di una o più camere per un intervallo di date specifico, indicando la manutenzione come motivo, così da evitare prenotazioni accidentali durante i lavori."
+  },
+  {
+    "categoria": "Zero-Shot",
+    "domanda": "Voglio una user story per un'app di carpooling che permetta ai passeggeri di vedere il rating del guidatore prima di prenotare.",
+    "risposta_ideale": "Come passeggero, voglio poter visualizzare il rating medio e le recensioni di un guidatore prima di confermare la mia richiesta di passaggio, così da poter scegliere un viaggio sicuro e affidabile."
+  },
+  {
+    "categoria": "Zero-Shot",
+    "domanda": "Un utente di un'app di ricette deve poter adattare le dosi di una ricetta in base al numero di persone.",
+    "risposta_ideale": "Come cuoco, voglio poter inserire il numero di porzioni desiderate e vedere le quantità degli ingredienti di una ricetta ricalcolarsi automaticamente, così da poter preparare il piatto per un numero diverso di persone senza fare calcoli manuali."
+  },
+  {
+    "categoria": "Zero-Shot",
+    "domanda": "Un utente di un'app di fitness deve poter registrare un allenamento inserendo esercizi, serie, ripetizioni e peso.",
+    "risposta_ideale": "Come atleta, voglio poter registrare i dettagli dei miei allenamenti, specificando per ogni esercizio il numero di serie, le ripetizioni e il peso utilizzato, così da poter monitorare i miei progressi nel tempo."
+  }
+]

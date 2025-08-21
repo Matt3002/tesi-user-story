@@ -1,0 +1,8 @@
+google-generativeai
+azure-search-documents
+azure-storage-blob
+python-dotenv
+sentence-transformers
+scikit-learn
+requests
+PyPDF2
