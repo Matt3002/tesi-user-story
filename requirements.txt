@@ -6,3 +6,7 @@ sentence-transformers
 scikit-learn
 requests
 PyPDF2
+promptflow-core
+ollama
+openai
+openpyxl

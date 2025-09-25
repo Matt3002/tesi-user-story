@@ -98,5 +98,30 @@
     "categoria": "Zero-Shot",
     "domanda": "Un utente di un'app di fitness deve poter registrare un allenamento inserendo esercizi, serie, ripetizioni e peso.",
     "risposta_ideale": "Come atleta, voglio poter registrare i dettagli dei miei allenamenti, specificando per ogni esercizio il numero di serie, le ripetizioni e il peso utilizzato, così da poter monitorare i miei progressi nel tempo."
+  },
+  {
+    "categoria": "Multi-Story",
+    "domanda": "L'utente deve potersi registrare, fare il login e, una volta autenticato, deve poter modificare il proprio profilo, cambiando nome e immagine.",
+    "risposta_ideale": "Come nuovo utente, voglio potermi registrare al servizio fornendo email e password, così da creare un account personale.\nCome utente registrato, voglio poter accedere al mio account inserendo le mie credenziali, così da utilizzare le funzionalità del servizio.\nCome utente autenticato, voglio poter modificare il mio nome e la mia immagine del profilo, così da mantenere le mie informazioni aggiornate e personalizzate."
+  },
+  {
+    "categoria": "Multi-Story",
+    "domanda": "L'amministratore del sito deve poter creare un nuovo articolo del blog, modificarlo in seguito e infine eliminarlo. Deve anche poter vedere la lista di tutti gli articoli.",
+    "risposta_ideale": "Come amministratore, voglio poter creare un nuovo articolo inserendo titolo, testo e immagine di copertina, così da pubblicare nuovi contenuti sul blog.\nCome amministratore, voglio poter modificare il contenuto di un articolo esistente, così da correggere errori o aggiornare le informazioni.\nCome amministratore, voglio poter eliminare un articolo obsoleto, così da mantenere pulito l'archivio dei contenuti.\nCome amministratore, voglio poter visualizzare una lista di tutti gli articoli pubblicati con la loro data di creazione, così da avere una visione d'insieme dei contenuti."
+  },
+  {
+    "categoria": "Multi-Story",
+    "domanda": "Durante il processo di checkout, l'utente deve poter inserire un indirizzo di spedizione, specificare un indirizzo di fatturazione diverso se necessario, e aggiungere i dati della sua carta di credito per il pagamento.",
+    "risposta_ideale": "Come cliente, voglio poter inserire e salvare un nuovo indirizzo di spedizione durante il checkout, così da ricevere il mio ordine dove preferisco.\nCome cliente, voglio poter specificare un indirizzo di fatturazione diverso da quello di spedizione, così da gestire correttamente la contabilità dei miei acquisti.\nCome cliente, voglio poter inserire in modo sicuro i dati della mia carta di credito per completare il pagamento, così da finalizzare l'ordine."
+  },
+  {
+    "categoria": "Multi-Story",
+    "domanda": "Voglio creare un nuovo post su un social network. Devo poter scrivere del testo, caricare una foto dal mio dispositivo e menzionare alcuni amici nel post.",
+    "risposta_ideale": "Come utente, voglio poter scrivere un contenuto testuale per un nuovo post, così da condividere i miei pensieri.\nCome utente, voglio poter caricare una foto dal mio computer o smartphone da allegare al post, così da arricchire il mio contenuto visivamente.\nCome utente, voglio poter menzionare i miei amici nel testo del post, così da coinvolgerli e notificare loro la mia pubblicazione."
+  },
+  {
+    "categoria": "Multi-Story",
+    "domanda": "Come capo progetto, ho bisogno di poter creare una nuova attività in bacheca, assegnarla a un membro del team e impostare una data di scadenza.",
+    "risposta_ideale": "Come capo progetto, voglio poter creare una nuova attività specificando un titolo e una descrizione, così da definire il lavoro da svolgere.\nCome capo progetto, voglio poter assegnare un'attività a un membro specifico del team, così da chiarire le responsabilità.\nCome capo progetto, voglio poter impostare una data di scadenza per un'attività, così da comunicare le tempistiche e monitorare l'avanzamento."
   }
 ]

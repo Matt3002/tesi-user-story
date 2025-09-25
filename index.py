@@ -1,40 +1,41 @@
-# index.py
+# index.py (Versione aggiornata con embedding LOCALE)
 
 import os
-import google.generativeai as genai
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.models import VectorizedQuery
 from dotenv import load_dotenv
+from sentence_transformers import SentenceTransformer
 
 load_dotenv()
 
 # --- CONFIGURAZIONE DEI SERVIZI ---
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 AZURE_SEARCH_ENDPOINT = os.getenv("AZURE_SEARCH_ENDPOINT")
 AZURE_SEARCH_API_KEY = os.getenv("AZURE_SEARCH_API_KEY")
 AZURE_SEARCH_INDEX_NAME = os.getenv("AZURE_SEARCH_INDEX_NAME")
 
-# Configura i client
-genai.configure(api_key=GEMINI_API_KEY)
+# --- CARICAMENTO DEL MODELLO DI EMBEDDING LOCALE ---
+# Usiamo lo stesso modello che usi per la valutazione per coerenza
+print("🔎 Caricamento del modello di embedding locale per la ricerca...")
+embedding_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+print("✅ Modello di embedding locale caricato.")
+
+# Configura il client di Azure AI Search
 search_client = SearchClient(
     endpoint=AZURE_SEARCH_ENDPOINT,
     index_name=AZURE_SEARCH_INDEX_NAME,
     credential=AzureKeyCredential(AZURE_SEARCH_API_KEY)
 )
 
-def find_products(context: str, top: int = 3) -> list[dict]:
+def find_products(context: str, top: int = 6) -> list[dict]:
     """
-    Usa l'API di Gemini per vettorizzare la domanda e poi interroga
-    Azure AI Search per recuperare i chunk di testo pertinenti.
+    Usa un modello locale (SentenceTransformer) per vettorizzare la domanda
+    e poi interroga Azure AI Search per recuperare i chunk di testo pertinenti.
     """
-    embedding_response = genai.embed_content(
-        model='models/embedding-001',
-        content=context,
-        task_type="RETRIEVAL_QUERY"
-    )
-    query_vector = embedding_response['embedding']
+    # 1. Crea l'embedding della domanda in locale, senza usare Gemini
+    query_vector = embedding_model.encode(context).tolist()
 
+    # 2. Esegui la ricerca vettoriale su Azure
     vector_query = VectorizedQuery(
         vector=query_vector,
         k_nearest_neighbors=top,
@@ -51,10 +52,9 @@ def find_products(context: str, top: int = 3) -> list[dict]:
     print(f"✅ Contesto recuperato: {len(contesto_recuperato)} chunk trovati.")
     return contesto_recuperato
 
-# Creiamo un oggetto "product" per coerenza con il tuo import
-# In questo modo, l'import "from index import product" funzionerà
+# Creiamo un oggetto "product" per coerenza con gli altri script
 class ProductFinder:
-    def find_products(self, context: str, top: int = 3):
+    def find_products(self, context: str, top: int = 6):
         return find_products(context, top)
 
 product = ProductFinder()
