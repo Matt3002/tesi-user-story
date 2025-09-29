@@ -30,8 +30,6 @@ if not all([AZURE_SEARCH_ENDPOINT, AZURE_SEARCH_API_KEY, AZURE_SEARCH_INDEX_NAME
     raise ValueError("One or more environment variables are not set. Please check your .env file.")
 
 # --- Local Embedding Model Loading ---
-# This model converts text chunks into numerical vectors (embeddings).
-# It's crucial to use the same model here as in the retrieval script ('index.py').
 print("Loading local embedding model for data population...")
 embedding_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
 print("Local embedding model loaded successfully.")
@@ -53,18 +51,13 @@ def read_text_from_pdf_stream(stream: io.BytesIO) -> str:
 def split_text_into_chunks(text: str, max_chunk_size: int = 1000) -> list[str]:
     """
     Splits a long text into smaller chunks.
-    Chunking is essential for RAG because it creates focused, semantically coherent
-    units for embedding, leading to more precise retrieval.
     """
     print("Splitting text into chunks...")
-    # Normalize whitespace.
     text = re.sub(r'\s+', ' ', text).strip()
-    # A simple strategy: split by paragraphs first.
     paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
     chunks = []
     for paragraph in paragraphs:
         if len(paragraph) > max_chunk_size:
-            # If a paragraph is too long, split it further.
             for i in range(0, len(paragraph), max_chunk_size):
                 chunks.append(paragraph[i:i + max_chunk_size])
         else:
@@ -86,11 +79,17 @@ if __name__ == "__main__":
         stream = io.BytesIO(blob_client.download_blob().readall())
         document_text = ""
         
-        # Extract text based on file extension.
         if blob.name.lower().endswith('.pdf'):
             document_text = read_text_from_pdf_stream(stream)
         elif blob.name.lower().endswith('.txt'):
-            document_text = stream.read().decode('utf-8')
+            # Try to decode with UTF-8 first, but fall back to a more resilient
+            # encoding if it fails, to prevent crashes on non-standard text files.
+            try:
+                document_text = stream.read().decode('utf-8')
+            except UnicodeDecodeError:
+                print("   - Warning: UTF-8 decoding failed. Retrying with 'latin-1' and replacing errors.")
+                stream.seek(0)  # Reset stream to the beginning after the failed read attempt.
+                document_text = stream.read().decode('latin-1', errors='replace')
         
         if not document_text.strip():
             print(f"Warning: No text could be extracted from {blob.name}. Skipping.")
@@ -100,10 +99,8 @@ if __name__ == "__main__":
         
         print(f"Generating embeddings for {len(chunks)} chunks from {blob.name}...")
         for i, chunk in enumerate(chunks):
-            # Generate the vector embedding for the current chunk.
             embedding = embedding_model.encode(chunk).tolist()
 
-            # Create the document structure that matches the Azure AI Search index schema.
             document = {
                 "id": str(uuid.uuid4()),
                 "content": chunk,
@@ -111,7 +108,6 @@ if __name__ == "__main__":
             }
             documents_to_upload.append(document)
 
-    # Upload all prepared documents to the index in a single batch request.
     if documents_to_upload:
         print(f"\nUploading {len(documents_to_upload)} documents to the Azure AI Search index...")
         try:

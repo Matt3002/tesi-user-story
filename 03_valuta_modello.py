@@ -26,7 +26,7 @@ from index import product
 from writer import writer_ollama, writer_azure_openai
 
 # --- Model Configuration ---
-MODELLO_DA_USARE = "azure_openai"  # Available options: "azure_openai", "ollama"
+MODELLO_DA_USARE = "ollama"  # Available options: "azure_openai", "ollama"
 # ---
 
 def salva_report_excel(risultati, punteggio_medio_totale, risultati_cat, num_validi, num_totali):
