@@ -7,7 +7,7 @@ import ollama
 
 # --- Model Configuration ---
 # The name of the local model you have downloaded via `ollama pull`.
-OLLAMA_MODEL_NAME = 'llama3-chatqa:8b' 
+OLLAMA_MODEL_NAME = 'llama3.2:latest' 
 # ---
 
 def write(productContext: str, assignment: str) -> str:
