@@ -1,53 +1,53 @@
 # chatbot.py
-# This script provides an interactive command-line interface (CLI) to chat
-# with the RAG-powered User Story generation agent. It has been updated to
-# include the query rewriting step to improve retrieval quality, allow the user
-# to choose between models at startup, and run in a non-interactive mode for automation.
+# Questo script fornisce un'interfaccia a riga di comando (CLI) interattiva per chattare
+# con l'agente di generazione di User Story basato su RAG. È stato aggiornato per
+# includere il passo di riscrittura della query per migliorare la qualità del recupero, permettere
+# all'utente di scegliere tra i modelli all'avvio ed essere eseguito in modalità non interattiva per l'automazione.
 
 import os
 import sys
 import argparse
 from dotenv import load_dotenv
 
-# --- Path Setup ---
-# Add the project's root directory to the Python path to allow importing local modules.
+# --- Setup del Percorso ---
+# Aggiunge la directory principale del progetto al path di Python per consentire l'importazione di moduli locali.
 script_directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_directory)
 
-# --- Module Imports ---
-# Import the necessary modules from the project structure.
-from index import product                          # Handles the Retrieval step
-from writer import writer_azure_openai, writer_ollama  # Handle the Generation step
-from query_rewriter import rewrite_query           # Handles the Query Transformation step
+# --- Importazione dei Moduli ---
+# Importa i moduli necessari dalla struttura del progetto.
+from index import product                           # Gestisce il passo di Recupero (Retrieval)
+from writer import writer_azure_openai, writer_ollama # Gestiscono il passo di Generazione (Generation)
+from query_rewriter import rewrite_query              # Gestisce il passo di Trasformazione della Query
 
-# --- Configuration ---
-# Load environment variables (API keys, endpoints) from the .env file.
+# --- Configurazione ---
+# Carica le variabili d'ambiente (chiavi API, endpoint) dal file .env.
 load_dotenv()
 
-# --- Core RAG Logic Function ---
+# --- Funzione Logica Principale del RAG ---
 def generate_user_story(user_query: str, model_name: str) -> str:
     """
-    Executes the full RAG pipeline for a given user query using the selected model.
-    This function now includes the query rewriting step.
+    Esegue l'intera pipeline RAG per una data query dell'utente usando il modello selezionato.
+    Questa funzione ora include il passo di riscrittura della query.
 
     Args:
-        user_query (str): The original query entered by the user.
-        model_name (str): The identifier for the model to use ("azure" or "ollama").
+        user_query (str): La query originale inserita dall'utente.
+        model_name (str): L'identificatore per il modello da usare ("azure" o "ollama").
 
     Returns:
-        str: The final, generated user story.
+        str: La user story finale generata.
     """
-    # 1. Query Rewriting: First, rewrite the user's query to be more effective for semantic search.
-    # The console output for this step is handled within the rewrite_query function.
+    # 1. Riscrittura della Query: Per prima cosa, riscrive la query dell'utente per renderla più efficace per la ricerca semantica.
+    # L'output a console per questo passo è gestito all'interno della funzione rewrite_query.
     rewritten_search_query = rewrite_query(user_query, model_name)
     
-    # Keep user-facing console output in Italian.
+    # Mantiene l'output a console rivolto all'utente in italiano.
     print(f"\n...Recupero contesto per la query: '{rewritten_search_query}'...")
     
-    # 2. Retrieval: Use the rewritten query to find the top 6 most relevant document chunks.
+    # 2. Recupero: Usa la query riscritta per trovare i 6 chunk di documenti più pertinenti.
     documents = product.find_products(context=rewritten_search_query, top=6)
     
-    # 3. Augmentation: Prepare the retrieved context for the final prompt.
+    # 3. Aumento: Prepara il contesto recuperato per il prompt finale.
     if not documents:
         context_for_prompt = "Nessun contesto specifico trovato nella base di conoscenza."
         print("⚠️  Nessun contesto pertinente trovato.")
@@ -57,7 +57,7 @@ def generate_user_story(user_query: str, model_name: str) -> str:
         )
         print(f"✅  Contesto basato su {len(documents)} documenti recuperato.")
 
-    # 4. Generation: Select the appropriate writer function based on the chosen model.
+    # 4. Generazione: Seleziona la funzione di scrittura appropriata in base al modello scelto.
     writers = {
         "azure": writer_azure_openai.write,
         "ollama": writer_ollama.write
@@ -70,8 +70,8 @@ def generate_user_story(user_query: str, model_name: str) -> str:
         
     print(f"...Genero la user story con {model_name.upper()}...")
     
-    # The final call to the writer uses the augmented context but the ORIGINAL user query
-    # to ensure the generated story directly answers the initial request.
+    # La chiamata finale allo scrittore usa il contesto aumentato ma la query ORIGINALE dell'utente
+    # per garantire che la storia generata risponda direttamente alla richiesta iniziale.
     final_response = writer_function(
         productContext=context_for_prompt,
         assignment=user_query
@@ -79,18 +79,18 @@ def generate_user_story(user_query: str, model_name: str) -> str:
     
     return final_response
 
-# --- Main Execution Block ---
-# This block runs when the script is executed directly.
+# --- Blocco di Esecuzione Principale ---
+# Questo blocco viene eseguito quando lo script è lanciato direttamente.
 if __name__ == "__main__":
-    # Set up an argument parser to handle both interactive and non-interactive execution.
-    # This is useful for automated workflows like GitHub Actions.
+    # Imposta un parser di argomenti per gestire sia l'esecuzione interattiva che non interattiva.
+    # Questo è utile per flussi di lavoro automatizzati come le GitHub Actions.
     parser = argparse.ArgumentParser(description="Agente Chatbot per la generazione di User Story.")
     parser.add_argument('--model', type=str, choices=['azure', 'ollama'], help="Il modello da utilizzare ('azure' o 'ollama').")
     parser.add_argument('--query', type=str, help="La richiesta per la user story (per l'esecuzione non interattiva).")
     args = parser.parse_args()
 
-    # --- NON-INTERACTIVE MODE ---
-    # If the script is run with '--model' and '--query' arguments, it executes once and exits.
+    # --- MODALITÀ NON INTERATTIVA ---
+    # Se lo script viene eseguito con gli argomenti '--model' e '--query', esegue una volta e termina.
     if args.model and args.query:
         print(f"✅ Esecuzione non interattiva con il modello: {args.model.upper()}")
         user_story = generate_user_story(args.query, args.model)
@@ -98,10 +98,10 @@ if __name__ == "__main__":
         print(user_story.strip())
         print("---------------------------\n")
     
-    # --- INTERACTIVE MODE ---
-    # If no arguments are provided, the script starts an interactive chat session.
+    # --- MODALITÀ INTERATTIVA ---
+    # Se non vengono forniti argomenti, lo script avvia una sessione di chat interattiva.
     else:
-        # User-facing prompts are in Italian.
+        # I prompt rivolti all'utente sono in italiano.
         print("Benvenuto nell'Agente per User Story!")
         print("Scegli il modello da utilizzare:")
         print("  1: Azure OpenAI (gpt-4o) - Potente e affidabile (Cloud)")
@@ -120,7 +120,7 @@ if __name__ == "__main__":
         
         print("Scrivi la tua richiesta per una user story. Digita 'esci' per terminare.")
         
-        # Start a loop to continuously accept user input.
+        # Avvia un ciclo per accettare continuamente l'input dell'utente.
         while True:
             user_input = input("\n> La tua richiesta: ")
             
@@ -128,10 +128,10 @@ if __name__ == "__main__":
                 print("Arrivederci!")
                 break
             
-            # For each input, run the full RAG pipeline with the query rewriter.
+            # Per ogni input, esegue l'intera pipeline RAG con il riscrittore di query.
             user_story = generate_user_story(user_input, selected_model)
             
-            # Print the formatted result.
+            # Stampa il risultato formattato.
             print("\n--- User Story Generata ---")
             print(user_story.strip())
             print("---------------------------\n")

@@ -9,85 +9,84 @@ import json
 import requests
 from dotenv import load_dotenv
 
-# Load environment variables from the .env file.
+# Carica le variabili d'ambiente dal file .env.
 load_dotenv()
 
-# --- Azure AI Search Configuration ---
-# Retrieve the necessary credentials and identifiers from environment variables.
+# --- Configurazione di Azure AI Search ---
+# Recupera le credenziali e gli identificatori necessari dalle variabili d'ambiente.
 AZURE_SEARCH_ENDPOINT = os.getenv("AZURE_SEARCH_ENDPOINT")
 AZURE_SEARCH_API_KEY = os.getenv("AZURE_SEARCH_API_KEY")
 AZURE_SEARCH_INDEX_NAME = os.getenv("AZURE_SEARCH_INDEX_NAME")
-# Use a stable API version for consistency and to avoid breaking changes.
-API_VERSION = "2023-11-01" 
+# Usa una versione stabile dell'API per coerenza e per evitare modifiche che potrebbero rompere il codice.
+API_VERSION = "2023-11-01"
 
-# Validate that all required environment variables are set before proceeding.
+# Valida che tutte le variabili d'ambiente richieste siano impostate prima di procedere.
 if not all([AZURE_SEARCH_ENDPOINT, AZURE_SEARCH_API_KEY, AZURE_SEARCH_INDEX_NAME]):
-    raise ValueError("One or more environment variables are not set. Please check your .env file.")
+    raise ValueError("Una o più variabili d'ambiente non sono impostate. Controlla il tuo file .env.")
 
-# Construct the full URL for the REST API endpoint to create/update an index.
+# Costruisce l'URL completo per l'endpoint dell'API REST per creare/aggiornare un indice.
 url = f"{AZURE_SEARCH_ENDPOINT}/indexes/{AZURE_SEARCH_INDEX_NAME}?api-version={API_VERSION}"
 
-# Set the required headers for the API request, including the content type and the API key for authentication.
+# Imposta gli header richiesti per la richiesta API, inclusi il tipo di contenuto e la chiave API per l'autenticazione.
 headers = {
     "Content-Type": "application/json",
     "api-key": AZURE_SEARCH_API_KEY
 }
 
-# --- Index Schema Definition ---
-# This JSON object defines the structure (schema) of the search index. It specifies the fields,
-# their types, and the vector search configuration.
+# --- Definizione dello Schema dell'Indice ---
+# Questo oggetto JSON definisce la struttura (schema) dell'indice di ricerca. Specifica i campi,
+# i loro tipi e la configurazione della ricerca vettoriale.
 index_body = {
     "name": AZURE_SEARCH_INDEX_NAME,
     "fields": [
-        # The 'id' field is the unique identifier for each document (chunk).
-        # 'key': True makes it the primary key.
+        # Il campo 'id' è l'identificatore univoco per ogni documento (chunk).
+        # 'key': True lo rende la chiave primaria.
         {"name": "id", "type": "Edm.String", "key": True, "filterable": True},
         
-        # The 'content' field holds the actual text of the chunk.
-        # 'searchable': True allows full-text search on this field.
+        # Il campo 'content' contiene il testo effettivo del chunk.
+        # 'searchable': True permette la ricerca full-text su questo campo.
         {"name": "content", "type": "Edm.String", "searchable": True},
         
-        # The 'content_vector' field stores the vector embedding of the content.
-        # 'type': 'Collection(Edm.Single)' specifies an array of single-precision floats.
+        # Il campo 'content_vector' memorizza l'embedding vettoriale del contenuto.
+        # 'type': 'Collection(Edm.Single)' specifica un array di numeri float a precisione singola.
         {
             "name": "content_vector",
             "type": "Collection(Edm.Single)",
             "searchable": True,
-            # 'dimensions' MUST match the output dimensions of the embedding model.
-            # 'paraphrase-multilingual-MiniLM-L12-v2' produces 384-dimension vectors.
+            # 'dimensions' DEVE corrispondere alle dimensioni di output del modello di embedding.
+            # 'paraphrase-multilingual-MiniLM-L12-v2' produce vettori a 384 dimensioni.
             "dimensions": 384,
             "vectorSearchProfile": "my-hnsw-profile",
         },
     ],
     "vectorSearch": {
-        # 'profiles' define named configurations for vector search.
+        # 'profiles' definisce configurazioni nominate per la ricerca vettoriale.
         "profiles": [
             {"name": "my-hnsw-profile", "algorithm": "my-hnsw-config"}
         ],
-        # 'algorithms' define the vector search algorithms. HNSW (Hierarchical Navigable Small World)
-        # is a high-performance algorithm used for approximate nearest neighbor search.
+        # 'algorithms' definisce gli algoritmi di ricerca vettoriale. HNSW (Hierarchical Navigable Small World)
+        # è un algoritmo ad alte prestazioni utilizzato per la ricerca approssimata dei vicini più prossimi.
         "algorithms": [
             {"name": "my-hnsw-config", "kind": "hnsw"}
         ],
     },
 }
 
-# Keep the console output in Italian.
-print(f"Sending PUT request to create/update index at: {url}")
+print(f"Invio della richiesta PUT per creare/aggiornare l'indice a: {url}")
 
-# Send the request to Azure AI Search to create or update the index.
-# A PUT request is idempotent, meaning it can be run multiple times safely. If the index
-# already exists with this schema, Azure will confirm success. If it exists but with a
-# different schema, it will be updated. If it doesn't exist, it will be created.
+# Invia la richiesta ad Azure AI Search per creare o aggiornare l'indice.
+# Una richiesta PUT è idempotente, il che significa che può essere eseguita più volte in sicurezza. Se l'indice
+# esiste già con questo schema, Azure confermerà il successo. Se esiste ma con uno
+# schema diverso, sarà aggiornato. Se non esiste, sarà creato.
 response = requests.put(url, headers=headers, data=json.dumps(index_body))
 
-# Check the HTTP response status code to confirm the result.
-# Status codes 200 (OK) or 201 (Created) indicate success.
+# Controlla il codice di stato della risposta HTTP per confermare il risultato.
+# I codici di stato 200 (OK) o 201 (Created) indicano il successo.
 if response.status_code in [200, 201]:
-    print("\nSUCCESS: The index was created or updated successfully.")
-    print("The index is now configured for 384-dimension vectors.")
+    print("\nSUCCESSO: L'indice è stato creato o aggiornato con successo.")
+    print("L'indice è ora configurato per vettori a 384 dimensioni.")
 else:
-    # If something went wrong, print the error status code and the detailed error message from Azure.
-    print(f"\nERROR: Azure responded with status code: {response.status_code}")
-    print("Error details:")
+    # Se qualcosa è andato storto, stampa il codice di stato dell'errore e il messaggio di errore dettagliato da Azure.
+    print(f"\nERRORE: Azure ha risposto con il codice di stato: {response.status_code}")
+    print("Dettagli dell'errore:")
     print(response.json())

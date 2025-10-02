@@ -1,8 +1,8 @@
 # query_rewriter.py
-# This module is dedicated to the Query Transformation step of the RAG pipeline.
-# Its primary purpose is to take a potentially vague or brief user query and
-# rewrite it into a more detailed, semantically rich query that is optimized
-# for vector search against a technical knowledge base.
+# Questo modulo è dedicato al passo di Trasformazione della Query nella pipeline RAG.
+# Il suo scopo principale è prendere una query dell'utente, potenzialmente vaga o breve, e
+# riscriverla in una query più dettagliata e semanticamente ricca, ottimizzata
+# per una ricerca vettoriale in una base di conoscenza tecnica.
 
 import os
 import ollama
@@ -10,22 +10,22 @@ from openai import AzureOpenAI
 
 def rewrite_query(user_query: str, model_name: str) -> str:
     """
-    Uses a Large Language Model (LLM) to expand and enhance a user's query for better retrieval results.
+    Usa un Large Language Model (LLM) per espandere e migliorare la query di un utente per ottenere risultati di recupero migliori.
 
     Args:
-        user_query (str): The original query from the user.
-        model_name (str): The identifier for the LLM to use for rewriting (e.g., "azure" or "ollama").
+        user_query (str): La query originale dell'utente.
+        model_name (str): L'identificatore per l'LLM da usare per la riscrittura (es. "azure" o "ollama").
 
     Returns:
-        str: The rewritten, optimized query for semantic search. If an error occurs,
-             it returns the original user query as a fallback.
+        str: La query riscritta e ottimizzata per la ricerca semantica. Se si verifica un errore,
+             restituisce la query originale dell'utente come fallback.
     """
-    # Keep the console output in Italian for the user.
+    # Mantiene l'output della console in italiano per l'utente.
     print(f"   - Riformulo la query originale: '{user_query}'...")
 
-    # This is a "meta-prompt" designed specifically for the rewriting task.
-    # It instructs the LLM to act as an information retrieval expert and to only
-    # rephrase the query, not answer it. This ensures the output is clean and focused.
+    # Questo è un "meta-prompt" progettato specificamente per il compito di riscrittura.
+    # Istruisce l'LLM ad agire come un esperto di recupero dell'informazione e a
+    # riformulare soltanto la query, non a rispondere. Ciò garantisce che l'output sia pulito e mirato.
     system_prompt_for_rewriting = (
         "Sei un assistente AI esperto in information retrieval. Il tuo unico compito è prendere una richiesta utente, "
         "spesso breve o ambigua, e trasformarla in una query di ricerca dettagliata e semanticamente ricca. "
@@ -34,27 +34,27 @@ def rewrite_query(user_query: str, model_name: str) -> str:
         "Restituisci solo ed esclusivamente la query migliorata, senza alcuna frase introduttiva o di contorno."
     )
     
-    # The user prompt combines the static instruction with the dynamic user query.
+    # Il prompt per l'utente combina l'istruzione statica con la query dinamica dell'utente.
     user_prompt_for_rewriting = f"Riscrivi e ottimizza la seguente richiesta per una ricerca semantica: \"{user_query}\""
     
-    # A robust try-except block handles potential API errors (e.g., network issues, invalid keys).
-    # If any error occurs, the function will fall back to using the original query,
-    # ensuring the RAG pipeline does not crash.
+    # Un blocco try-except robusto gestisce potenziali errori dell'API (es. problemi di rete, chiavi non valide).
+    # Se si verifica un errore, la funzione ripiegherà sull'uso della query originale,
+    # garantendo che la pipeline RAG non si blocchi.
     try:
         rewritten_query = ""
-        # --- Model Selection Logic ---
-        # Selects the appropriate LLM service based on the 'model_name' parameter.
+        # --- Logica di Selezione del Modello ---
+        # Seleziona il servizio LLM appropriato in base al parametro 'model_name'.
 
         if model_name == "azure":
-            # Initialize the Azure OpenAI client using credentials from environment variables.
+            # Inizializza il client di Azure OpenAI usando le credenziali dalle variabili d'ambiente.
             client = AzureOpenAI(
                 api_key=os.getenv("AZURE_OPENAI_API_KEY"),
                 api_version="2024-02-01",
                 azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
             )
-            # Send the request to the Azure OpenAI API with the specialized rewriting prompts.
+            # Invia la richiesta all'API di Azure OpenAI con i prompt specializzati per la riscrittura.
             response = client.chat.completions.create(
-                model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4o"), # Reads the deployment name from .env
+                model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4o"), # Legge il nome del deployment da .env
                 messages=[
                     {"role": "system", "content": system_prompt_for_rewriting},
                     {"role": "user", "content": user_prompt_for_rewriting}
@@ -63,11 +63,11 @@ def rewrite_query(user_query: str, model_name: str) -> str:
             rewritten_query = response.choices[0].message.content
 
         elif model_name == "ollama":
-            # Read the local model name from .env, with a fallback to a default value.
+            # Legge il nome del modello locale da .env, con un fallback a un valore predefinito.
             ollama_model = os.getenv("OLLAMA_MODEL_NAME", "llama3.2:latest")
             print(f"   - Tento la riformulazione con il modello Ollama: '{ollama_model}'")
             
-            # Send the request to the local Ollama service.
+            # Invia la richiesta al servizio Ollama locale.
             response = ollama.chat(
                 model=ollama_model,
                 messages=[
@@ -78,18 +78,18 @@ def rewrite_query(user_query: str, model_name: str) -> str:
             rewritten_query = response['message']['content']
             
         else:
-            # If the model_name is not recognized, skip rewriting and return the original query.
+            # Se il model_name non è riconosciuto, salta la riscrittura e restituisce la query originale.
             print(f"   - ATTENZIONE: Modello '{model_name}' non valido. Uso la query originale.")
             return user_query
 
-        # --- Final Processing ---
-        # Clean up the LLM's response by removing leading/trailing whitespace and any quotation marks
-        # to ensure a clean query is passed to the search index.
+        # --- Elaborazione Finale ---
+        # Pulisce la risposta dell'LLM rimuovendo spazi bianchi iniziali/finali e qualsiasi virgoletta
+        # per garantire che una query pulita venga passata all'indice di ricerca.
         final_query = rewritten_query.strip().replace('"', '')
         print(f"   - Query ottimizzata: '{final_query}'")
         return final_query
 
     except Exception as e:
-        # If any exception occurs during the API call, log the error and return the original query.
+        # Se si verifica un'eccezione durante la chiamata API, registra l'errore e restituisce la query originale.
         print(f"   - ERRORE durante la riformulazione della query: {e}. Verrà usata la query originale.")
         return user_query

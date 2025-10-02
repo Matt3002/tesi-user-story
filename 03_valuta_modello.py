@@ -1,10 +1,10 @@
 # 03_valuta_modello.py
-# This script performs a quantitative evaluation of the RAG system.
-# It iterates through a predefined 'golden dataset' of questions and ideal answers,
-# runs the full RAG pipeline for each question, and calculates the semantic similarity
-# between the generated answer and the ideal answer. Items where the model responds
-# with "Context not sufficient" are logged in the report but excluded from the
-# final average score calculation for a more accurate performance metric.
+# Questo script esegue una valutazione quantitativa del sistema RAG.
+# Itera attraverso un 'golden dataset' predefinito di domande e risposte ideali,
+# esegue l'intera pipeline RAG per ogni domanda e calcola la similarità semantica
+# tra la risposta generata e quella ideale. Gli elementi in cui il modello risponde
+# con "Contesto non sufficiente" vengono registrati nel report ma esclusi dal
+# calcolo del punteggio medio finale per una metrica di performance più accurata.
 
 import os
 import sys
@@ -16,40 +16,40 @@ from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Add the project's root directory to the Python path to allow importing local modules.
+# Aggiunge la directory principale del progetto al path di Python per consentire l'importazione di moduli locali.
 script_directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_directory)
 
-# Import the project's custom modules.
+# Importa i moduli personalizzati del progetto.
 from index import product
 from writer import writer_ollama, writer_azure_openai
 from query_rewriter import rewrite_query
 
-# --- Model Configuration ---
-# This variable allows switching between different LLMs for evaluation.
-# It must match the keys used in the 'writers' dictionary (e.g., "azure", "ollama").
-MODELLO_DA_USARE = "azure"  # Options: "azure", "ollama"
+# --- Configurazione del Modello ---
+# Questa variabile permette di passare da un LLM all'altro per la valutazione.
+# Deve corrispondere alle chiavi usate nel dizionario 'writers' (es. "azure", "ollama").
+MODELLO_DA_USARE = "azure"  # Opzioni: "azure", "ollama"
 
 def salva_report_excel(risultati, punteggio_medio_totale, risultati_cat, num_validi, num_totali):
     """
-    Saves the evaluation results into a well-formatted Excel file.
-    This function handles all the styling and data aggregation for the final report.
+    Salva i risultati della valutazione in un file Excel ben formattato.
+    Questa funzione gestisce tutta la formattazione e l'aggregazione dei dati per il report finale.
     """
-    # Keep console output in Italian.
+    # Mantiene l'output della console in italiano.
     print("\nSalvataggio del report su file Excel...")
     try:
         wb = Workbook()
         ws = wb.active
         ws.title = "RAG Evaluation Report"
 
-        # Define the headers for the Excel report, including the new "Rewritten Question" column.
+        # Definisce le intestazioni per il report Excel, inclusa la nuova colonna "Domanda Riformulata".
         headers = ["Categoria", "Domanda Originale", "Domanda Riformulata", "Risposta Ideale", "Risposta Generata", "Punteggio Similarità"]
         ws.append(headers)
         
-        # --- Excel Styling ---
+        # --- Formattazione Excel ---
         header_font = Font(bold=True, color="FFFFFF")
         header_fill = PatternFill(start_color="4F81BD", end_color="4F81BD", fill_type="solid")
-        # Style for rows that were excluded from the average score calculation.
+        # Stile per le righe escluse dal calcolo del punteggio medio.
         excluded_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
         
         for cell in ws[1]:
@@ -57,7 +57,7 @@ def salva_report_excel(risultati, punteggio_medio_totale, risultati_cat, num_val
             cell.fill = header_fill
             cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
-        # --- Data Population ---
+        # --- Popolamento dei Dati ---
         for item in risultati:
             ws.append([
                 item["categoria"],
@@ -67,19 +67,19 @@ def salva_report_excel(risultati, punteggio_medio_totale, risultati_cat, num_val
                 item["risposta_generata"],
                 f'{item["score"]:.4f}'
             ])
-            # Highlight rows where the model could not find sufficient context.
+            # Evidenzia le righe in cui il modello non ha trovato contesto sufficiente.
             if "contesto non sufficiente" in item["risposta_generata"].lower():
                 for cell in ws[ws.max_row]:
                     cell.fill = excluded_fill
 
-        # Apply borders and text wrapping to all data cells for better readability.
+        # Applica bordi e a capo automatico a tutte le celle di dati per una migliore leggibilità.
         thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
         for row in ws.iter_rows(min_row=2, max_row=len(risultati)+1):
             for cell in row:
                 cell.alignment = Alignment(wrap_text=True, vertical="top")
                 cell.border = thin_border
         
-        # Set column widths for better layout.
+        # Imposta la larghezza delle colonne per un layout migliore.
         ws.column_dimensions['A'].width = 20
         ws.column_dimensions['B'].width = 50
         ws.column_dimensions['C'].width = 50
@@ -87,8 +87,8 @@ def salva_report_excel(risultati, punteggio_medio_totale, risultati_cat, num_val
         ws.column_dimensions['E'].width = 60
         ws.column_dimensions['F'].width = 20
         
-        # --- Summary Section ---
-        # Add a summary block at the end of the report with overall metrics.
+        # --- Sezione di Riepilogo ---
+        # Aggiunge un blocco di riepilogo alla fine del report con le metriche complessive.
         start_row = len(risultati) + 4
         ws.cell(row=start_row, column=1, value="Evaluation Summary").font = Font(bold=True, size=14)
         ws.merge_cells(start_row=start_row, start_column=1, end_row=start_row, end_column=3)
@@ -108,127 +108,127 @@ def salva_report_excel(risultati, punteggio_medio_totale, risultati_cat, num_val
             ws.cell(row=cat_row, column=2, value=f"{punteggio['media']:.4f} ({punteggio['validi']}/{punteggio['totali']} samples)").font = Font(bold=True)
             cat_row += 1
 
-        # Generate a unique filename with a timestamp.
+        # Genera un nome file unico con un timestamp.
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f'report_valutazione_{MODELLO_DA_USARE}_{timestamp}.xlsx'
         wb.save(file_name)
-        print(f"✅ Report saved successfully as '{file_name}'")
+        print(f"✅ Report salvato con successo come '{file_name}'")
         
     except Exception as e:
-        print(f"ERROR while saving the Excel report: {e}")
+        print(f"ERRORE durante il salvataggio del report Excel: {e}")
 
 
 def esegui_rag(domanda: str) -> tuple[str, str]:
     """
-    Orchestrates the full RAG pipeline for a single question.
-    This version includes the query rewriting step to improve retrieval.
+    Orchestra l'intera pipeline RAG per una singola domanda.
+    Questa versione include il passo di riscrittura della query per migliorare il recupero.
 
     Args:
-        domanda (str): The original user question from the golden dataset.
+        domanda (str): La domanda originale dell'utente dal golden dataset.
 
     Returns:
-        tuple[str, str]: A tuple containing the generated response and the rewritten query.
+        tuple[str, str]: Una tupla contenente la risposta generata e la query riscritta.
     """
-    print(f"   - Running RAG for question: '{domanda}'")
+    print(f"  - Esecuzione RAG per la domanda: '{domanda}'")
     
-    # 1. Query Rewriting: Enhance the original question for better semantic search.
+    # 1. Riscrittura della Query: Migliora la domanda originale per una ricerca semantica più efficace.
     query_per_ricerca = rewrite_query(domanda, MODELLO_DA_USARE)
     
-    # 2. Retrieval: Use the rewritten query to find relevant documents from the search index.
+    # 2. Recupero: Usa la query riscritta per trovare documenti pertinenti dall'indice di ricerca.
     documenti_trovati = product.find_products(context=query_per_ricerca)
     
-    # 3. Augmentation: Prepare the retrieved context to be injected into the final prompt.
-    contesto_per_prompt = "\n\n---\n\n".join([doc.get("content", "") for doc in documenti_trovati]) if documenti_trovati else "No specific context was found."
+    # 3. Aumento: Prepara il contesto recuperato per essere iniettato nel prompt finale.
+    contesto_per_prompt = "\n\n---\n\n".join([doc.get("content", "") for doc in documenti_trovati]) if documenti_trovati else "Nessun contesto specifico è stato trovato."
     
-    # 4. Generation: Select the appropriate LLM writer and generate the final answer.
+    # 4. Generazione: Seleziona lo scrittore LLM appropriato e genera la risposta finale.
     writers = {
         "ollama": writer_ollama.write,
-        "azure": writer_azure_openai.write # Use "azure" as the key
+        "azure": writer_azure_openai.write # Usa "azure" come chiave
     }
     
-    # The final prompt uses the retrieved context but the ORIGINAL question to ensure
-    # the answer is directly addressing the user's initial request.
+    # Il prompt finale usa il contesto recuperato ma la domanda ORIGINALE per garantire
+    # che la risposta sia direttamente indirizzata alla richiesta iniziale dell'utente.
     risposta_generata = writers[MODELLO_DA_USARE](productContext=contesto_per_prompt, assignment=domanda)
     
-    # Return both the final answer and the rewritten query for detailed reporting.
+    # Restituisce sia la risposta finale sia la query riscritta per un report dettagliato.
     return risposta_generata, query_per_ricerca
 
 
-# --- Main Evaluation Flow ---
+# --- Flusso Principale di Valutazione ---
 if __name__ == "__main__":
-    print(f"--- STARTING EVALUATION (SELECTED MODEL: {MODELLO_DA_USARE.upper()}) ---")
+    print(f"--- INIZIO VALUTAZIONE (MODELLO SELEZIONATO: {MODELLO_DA_USARE.upper()}) ---")
     
-    # Load environment variables (API keys, endpoints) from the .env file.
+    # Carica le variabili d'ambiente (chiavi API, endpoint) dal file .env.
     load_dotenv()
     
-    print("Loading golden_dataset.json...")
+    print("Caricamento di golden_dataset.json...")
     try:
         dataset_path = os.path.join(script_directory, 'golden_dataset.json')
         with open(dataset_path, 'r', encoding='utf-8') as f:
             golden_dataset = json.load(f)
-        print(f"Dataset loaded successfully with {len(golden_dataset)} examples.")
+        print(f"Dataset caricato con successo con {len(golden_dataset)} esempi.")
     except FileNotFoundError:
-        print(f"ERROR: File '{dataset_path}' not found.")
+        print(f"ERRORE: File '{dataset_path}' non trovato.")
         sys.exit()
 
-    # Load the sentence-transformer model used for calculating cosine similarity scores.
-    # This model must be consistent to produce comparable scores.
-    print("Loading embedding model for evaluation scoring...")
+    # Carica il modello sentence-transformer usato per calcolare i punteggi di similarità del coseno.
+    # Questo modello deve essere consistente per produrre punteggi comparabili.
+    print("Caricamento del modello di embedding per il calcolo dei punteggi...")
     model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
-    print("Embedding model loaded.")
+    print("Modello di embedding caricato.")
 
-    # Initialize lists to store results for final aggregation and export.
+    # Inizializza le liste per memorizzare i risultati per l'aggregazione finale e l'esportazione.
     risultati_per_export = []
     risultati_valutazione_validi = []
     risultati_per_categoria_validi = {}
 
-    print("\nStarting evaluation loop on the Golden Dataset...")
-    # Iterate over each question-answer pair in the golden dataset.
+    print("\nInizio del ciclo di valutazione sul Golden Dataset...")
+    # Itera su ogni coppia domanda-risposta nel golden dataset.
     for i, item in enumerate(golden_dataset):
         categoria = item['categoria']
         domanda_test = item["domanda"]
         risposta_ideale = item["risposta_ideale"]
 
-        print(f"\n--- Evaluating item {i+1}/{len(golden_dataset)} (Category: {categoria}) ---")
+        print(f"\n--- Valutazione elemento {i+1}/{len(golden_dataset)} (Categoria: {categoria}) ---")
         
-        # Initialize variables before the try block to prevent NameError on exceptions.
+        # Inizializza le variabili prima del blocco try per prevenire NameError in caso di eccezioni.
         risposta_generata = "ERRORE SCONOSCIUTO"
         domanda_riformulata = "ERRORE SCONOSCIUTO"
 
         try:
-            # Execute the RAG pipeline and capture both the response and the rewritten query.
+            # Esegue la pipeline RAG e cattura sia la risposta sia la query riscritta.
             risposta_generata, domanda_riformulata = esegui_rag(domanda_test)
             is_contesto_insufficiente = "contesto non sufficiente" in risposta_generata.lower()
 
             if is_contesto_insufficiente:
-                # If the model signals that the context was insufficient, assign a score of 0.
-                # This response will be excluded from the final average score.
-                print("   - 'Context not sufficient' response detected. Excluding from average calculation.")
+                # Se il modello segnala che il contesto era insufficiente, assegna un punteggio di 0.
+                # Questa risposta sarà esclusa dal calcolo del punteggio medio finale.
+                print("  - Rilevata risposta 'Contesto non sufficiente'. Esclusa dal calcolo della media.")
                 score = 0.0
             else:
-                # If a valid response is generated, calculate its semantic similarity to the ideal answer.
+                # Se viene generata una risposta valida, calcola la sua similarità semantica con la risposta ideale.
                 embedding_generato = model.encode([risposta_generata])
                 embedding_ideale = model.encode([risposta_ideale])
                 score = cosine_similarity(embedding_generato, embedding_ideale)[0][0]
             
-            # Print a comparison to the console for real-time monitoring.
-            print("\n" + "="*20 + " RESPONSE COMPARISON " + "="*20)
-            print(f"QUESTION        : {domanda_test}")
-            print(f"REWRITTEN QUERY : {domanda_riformulata}") # Added for visibility
-            print(f"IDEAL RESPONSE  :\n{risposta_ideale}\n")
-            print(f"GENERATED RESPONSE:\n{risposta_generata.strip()}")
+            # Stampa un confronto sulla console per il monitoraggio in tempo reale.
+            print("\n" + "="*20 + " CONFRONTO RISPOSTE " + "="*20)
+            print(f"DOMANDA           : {domanda_test}")
+            print(f"QUERY RISCRITTA   : {domanda_riformulata}") # Aggiunto per visibilità
+            print(f"RISPOSTA IDEALE   :\n{risposta_ideale}\n")
+            print(f"RISPOSTA GENERATA :\n{risposta_generata.strip()}")
             print("="*62 + "\n")
-            print(f"   - Semantic Similarity Score: {score:.4f}")
+            print(f"  - Punteggio Similarità Semantica: {score:.4f}")
             
         except Exception as e:
-            # Catch any unexpected errors during the RAG pipeline execution.
-            print(f"\nAn unexpected error occurred: {e}\n")
+            # Cattura eventuali errori inaspettati durante l'esecuzione della pipeline RAG.
+            print(f"\nSi è verificato un errore inaspettato: {e}\n")
             score = 0.0
-            # Ensure the variables have error values if the try block fails.
+            # Assicura che le variabili abbiano valori di errore se il blocco try fallisce.
             risposta_generata = f"ERRORE: {e}"
             is_contesto_insufficiente = True
 
-        # Store the results of the current item for later export.
+        # Memorizza i risultati dell'elemento corrente per la successiva esportazione.
         risultati_per_export.append({
             "categoria": categoria,
             "domanda": domanda_test,
@@ -238,15 +238,15 @@ if __name__ == "__main__":
             "score": score
         })
         
-        # Aggregate scores for valid (non-excluded) responses.
+        # Aggrega i punteggi per le risposte valide (non escluse).
         if not is_contesto_insufficiente:
             risultati_valutazione_validi.append(score)
             if categoria not in risultati_per_categoria_validi:
                 risultati_per_categoria_validi[categoria] = []
             risultati_per_categoria_validi[categoria].append(score)
 
-    # --- Final Score Calculation ---
-    # Calculate the overall average score and the average score for each category.
+    # --- Calcolo Finale dei Punteggi ---
+    # Calcola il punteggio medio complessivo e il punteggio medio per ogni categoria.
     punteggio_medio = sum(risultati_valutazione_validi) / len(risultati_valutazione_validi) if risultati_valutazione_validi else 0
     punteggi_medi_categoria_dettagliati = {}
     for cat in set(item['categoria'] for item in golden_dataset):
@@ -255,18 +255,18 @@ if __name__ == "__main__":
         totali_in_cat = sum(1 for item in golden_dataset if item['categoria'] == cat)
         punteggi_medi_categoria_dettagliati[cat] = {'media': media, 'validi': len(scores_validi), 'totali': totali_in_cat}
 
-    # --- Print Final Summary to Console ---
-    print("\n\n--- FINAL EVALUATION RESULTS ---")
-    print(f"Model Evaluated: {MODELLO_DA_USARE.upper()}")
+    # --- Stampa il Riepilogo Finale sulla Console ---
+    print("\n\n--- RISULTATI FINALI DELLA VALUTAZIONE ---")
+    print(f"Modello Valutato: {MODELLO_DA_USARE.upper()}")
     num_totali = len(golden_dataset)
     num_validi = len(risultati_valutazione_validi)
-    print(f"Total Samples: {num_totali}")
-    print(f"Evaluated Samples (excluding 'Context not sufficient'): {num_validi}")
-    print(f"Average Score (on evaluated samples): {punteggio_medio:.4f}")
+    print(f"Campioni Totali: {num_totali}")
+    print(f"Campioni Valutati (escluso 'Contesto non sufficiente'): {num_validi}")
+    print(f"Punteggio Medio (sui campioni valutati): {punteggio_medio:.4f}")
     
-    print("\n--- DETAILED ANALYSIS BY CATEGORY ---")
+    print("\n--- ANALISI DETTAGLIATA PER CATEGORIA ---")
     for categoria, dati in punteggi_medi_categoria_dettagliati.items():
-        print(f"Category '{categoria}': Average Score = {dati['media']:.4f} ({dati['validi']}/{dati['totali']} evaluated samples)")
+        print(f"Categoria '{categoria}': Punteggio Medio = {dati['media']:.4f} ({dati['validi']}/{dati['totali']} campioni valutati)")
 
-    # Save the detailed results to an Excel file.
+    # Salva i risultati dettagliati in un file Excel.
     salva_report_excel(risultati_per_export, punteggio_medio, punteggi_medi_categoria_dettagliati, num_validi, num_totali)

@@ -11,27 +11,27 @@ from azure.search.documents.models import VectorizedQuery
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 
-# Load environment variables from the .env file at the root of the project.
+# Carica le variabili d'ambiente dal file .env
 load_dotenv()
 
-# --- SERVICE CONFIGURATION ---
-# Retrieve Azure AI Search credentials and identifiers from environment variables.
+# --- CONFIGURAZIONE DEL SERVIZIO ---
+# Recupera le credenziali e gli identificatori di Azure AI Search dalle variabili d'ambiente.
 AZURE_SEARCH_ENDPOINT = os.getenv("AZURE_SEARCH_ENDPOINT")
 AZURE_SEARCH_API_KEY = os.getenv("AZURE_SEARCH_API_KEY")
 AZURE_SEARCH_INDEX_NAME = os.getenv("AZURE_SEARCH_INDEX_NAME")
 
-# --- LOCAL EMBEDDING MODEL LOADING ---
-# Load the SentenceTransformer model directly into memory.
-# This same model is used for both indexing documents (in 02_popola_indice.py) and for
-# querying, which is crucial for ensuring that the query and the documents exist
-# in the same vector space.
-# The console output is kept in Italian for the user.
+#--- CARICAMENTO DEL MODELLO DI EMBEDDING LOCALE ---
+# Carica il modello SentenceTransformer direttamente in memoria.
+# Questo stesso modello viene utilizzato sia per l'indicizzazione dei documenti (in 02_popola_indice.py)
+# sia per le query, il che è cruciale per garantire che la query e i documenti esistano
+# nello stesso spazio vettoriale.
+
 print("🔎 Caricamento del modello di embedding locale per la ricerca...")
 embedding_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
 print("✅ Modello di embedding locale caricato.")
 
-# Initialize the client for Azure AI Search.
-# This client object will handle all communications with the search service.
+# Inizializza il client per Azure AI Search.
+# Questo oggetto client gestirà tutte le comunicazioni con il servizio di ricerca.
 search_client = SearchClient(
     endpoint=AZURE_SEARCH_ENDPOINT,
     index_name=AZURE_SEARCH_INDEX_NAME,
@@ -53,22 +53,22 @@ def find_products(context: str, top: int = 6) -> list[dict]:
     Returns:
         list[dict]: A list of the search result documents.
     """
-    # 1. Vectorize the Query: Convert the input text 'context' into a 384-dimension
-    #    vector using the locally loaded embedding model.
+    # 1. Vettorizza la Query: Converte il testo di input 'context' in un vettore
+    #a 384 dimensioni usando il modello di embedding caricato localmente.
     query_vector = embedding_model.encode(context).tolist()
 
-    # 2. Build the Vector Query: Construct a search query object that Azure AI Search
-    #    understands. This specifies the vector to search for, how many neighbors to find (k),
-    #    and which vector field in the index to search against ('content_vector').
+    # 2. Costruisci la Query Vettoriale: Costruisce un oggetto di query di ricerca che
+    #Azure AI Search comprende. Questo specifica il vettore da cercare, quanti vicini
+    #trovare (k) e contro quale campo vettoriale nell'indice cercare ('content_vector').
     vector_query = VectorizedQuery(
         vector=query_vector,
         k_nearest_neighbors=top,
         fields="content_vector"
     )
 
-    # 3. Execute the Search: Send the query to the Azure AI Search service.
-    #    'search_text' is None because we are performing a pure vector search.
-    #    'select' specifies which fields to return from the found documents (here, only the text content).
+    # 3. Esegui la Ricerca: Invia la query al servizio Azure AI Search.
+#    'search_text' è None perché stiamo eseguendo una ricerca puramente vettoriale.
+#    'select' specifica quali campi restituire dai documenti trovati (qui, solo il contenuto testuale).
     results = search_client.search(
         search_text=None,
         vector_queries=[vector_query],
@@ -80,12 +80,12 @@ def find_products(context: str, top: int = 6) -> list[dict]:
     print(f"✅ Contesto recuperato: {len(contesto_recuperato)} chunk trovati.")
     return contesto_recuperato
 
-# This class acts as a simple wrapper around the find_products function.
-# It was created to provide a consistent object-oriented interface (`product.find_products`)
-# that is used across other scripts like the chatbot and the evaluation script.
+# Questa classe agisce come un semplice wrapper attorno alla funzione find_products.
+# È stata creata per fornire un'interfaccia orientata agli oggetti coerente (`product.find_products`)
+# che viene utilizzata in altri script come il chatbot e lo script di valutazione.
 class ProductFinder:
     def find_products(self, context: str, top: int = 6):
         return find_products(context, top)
 
-# Instantiate the finder so other modules can import and use it directly.
+# Istanzia il finder in modo che altri moduli possano importarlo e usarlo direttamente.
 product = ProductFinder()

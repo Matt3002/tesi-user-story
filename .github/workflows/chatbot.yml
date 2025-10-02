@@ -1,10 +1,10 @@
-# This workflow allows you to run the chatbot agent directly from the GitHub UI.
+# Questo workflow permette di eseguire l'agente chatbot direttamente dall'interfaccia UI di GitHub.
 name: Avvia Agente Chatbot
 
-# This trigger allows the workflow to be run manually from the Actions tab.
+# Questo trigger permette di avviare il workflow manualmente dalla tab "Actions".
 on:
   workflow_dispatch:
-    # Define the input fields that will be shown in the GitHub UI.
+    # Definisce i campi di input che verranno mostrati nell'interfaccia di GitHub.
     inputs:
       user_query:
         description: 'La tua richiesta per la user story'
@@ -13,28 +13,30 @@ on:
 
 jobs:
   run-chatbot:
+    # Specifica che il lavoro deve essere eseguito su una macchina virtuale Ubuntu fornita da GitHub.
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Check-out the repository code.
+      # Passo 1: Scarica il codice del repository sulla macchina virtuale.
       - name: Check-out repository
         uses: actions/checkout@v4
 
-      # Step 2: Set up the Python environment.
+      # Passo 2: Imposta l'ambiente Python.
       - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      # Step 3: Install all dependencies from requirements.txt.
+      # Passo 3: Installa tutte le dipendenze dal file requirements.txt.
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 4: Run the chatbot in non-interactive mode.
-      # It uses the Azure model and passes the user's query from the GitHub UI input.
+      # Passo 4: Esegue lo script del chatbot in modalità non interattiva.
+      # Utilizza il modello di Azure e passa la query dell'utente dall'input dell'interfaccia di GitHub.
       - name: Esegui Chatbot con Azure OpenAI
         env:
+          # Carica le credenziali e gli endpoint dai "secrets" del repository GitHub per sicurezza.
           AZURE_SEARCH_ENDPOINT: ${{ secrets.AZURE_SEARCH_ENDPOINT }}
           AZURE_SEARCH_API_KEY: ${{ secrets.AZURE_SEARCH_API_KEY }}
           AZURE_SEARCH_INDEX_NAME: ${{ secrets.AZURE_SEARCH_INDEX_NAME }}

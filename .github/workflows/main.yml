@@ -1,46 +1,46 @@
-# This is the name of the GitHub Actions workflow.
-# It will be displayed in the "Actions" tab of your GitHub repository.
-name: RAG Model CI Evaluation
+# Questo è il nome del workflow di GitHub Actions.
+# Verrà visualizzato nella tab "Actions" del tuo repository GitHub.
+name: Valutazione CI del Modello RAG
 
-# This section defines the trigger for the workflow.
-# 'on: push:' means the workflow will run every time you push code.
-# 'branches: [ main ]' specifies that it should only run for pushes to the 'main' branch.
+# Questa sezione definisce il trigger per il workflow.
+# 'on: push:' significa che il workflow si avvierà ogni volta che fai un push del codice.
+# 'branches: [ main ]' specifica che dovrebbe avviarsi solo per i push sul branch 'main'.
 on:
   push:
     branches: [ main ]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel.
+# Un workflow è composto da uno o più lavori che possono essere eseguiti in sequenza o in parallelo.
 jobs:
-  # This job is named 'evaluate'. You can name it whatever you want.
+  # Questo lavoro si chiama 'evaluate'. Puoi nominarlo come preferisci.
   evaluate:
-    # The type of virtual machine to run the job on. 'ubuntu-latest' is a standard and reliable choice.
+    # Il tipo di macchina virtuale su cui eseguire il lavoro. 'ubuntu-latest' è una scelta standard e affidabile.
     runs-on: ubuntu-latest
 
-    # 'steps' represent a sequence of tasks that will be executed as part of the job.
+    # 'steps' rappresenta una sequenza di task che verranno eseguiti come parte del lavoro.
     steps:
-      # Step 1: Check-out your repository's code.
-      # This action allows the workflow to access all the files in your project.
+      # Passo 1: Scarica il codice del tuo repository.
+      # Questa azione permette al workflow di accedere a tutti i file del tuo progetto.
       - name: Check-out repository
         uses: actions/checkout@v4
 
-      # Step 2: Set up the Python environment.
-      # This specifies which version of Python to use.
+      # Passo 2: Imposta l'ambiente Python.
+      # Specifica quale versione di Python utilizzare.
       - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      # Step 3: Install all the necessary dependencies.
-      # This command reads your requirements.txt file and installs all the libraries.
+      # Passo 3: Installa tutte le dipendenze necessarie.
+      # Questo comando legge il tuo file requirements.txt e installa tutte le librerie.
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 4: Run the RAG evaluation script.
-      # This is the core step of the workflow. It executes your main evaluation script.
-      # The 'env' block is crucial for security: it maps the GitHub Secrets to
-      # environment variables that the script can access safely.
+      # Passo 4: Esegue lo script di valutazione RAG.
+      # Questo è il passo centrale del workflow. Esegue il tuo script di valutazione principale.
+      # Il blocco 'env' è cruciale per la sicurezza: mappa i "Secrets" di GitHub a
+      # variabili d'ambiente a cui lo script può accedere in modo sicuro.
       - name: Run RAG evaluation
         env:
           AZURE_SEARCH_ENDPOINT: ${{ secrets.AZURE_SEARCH_ENDPOINT }}
